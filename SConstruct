@@ -95,7 +95,7 @@ vars.AddVariables(
               ),
 
   ( 'numberOfMechanisms', 'Number of anelastic mechanisms (needs to be set if equations=viscoelastic).', '0' ),
-  
+
   ( 'multipleSimulations', 'Fuse multiple simulations in one run.', '1' ),
 
   PathVariable( 'memLayout', 'Path to memory layout file.', None, PathVariable.PathIsFile),
@@ -313,8 +313,9 @@ env['LINK'] = env['F90']
 
 # Linker-flags for Fortran linking
 if env['compiler'] == 'intel':
-    env.Append(LINKFLAGS=['-nofor-main', '-cxxlib']) #Add -ldmalloc for ddt
+    env.Append(LINKFLAGS=['-nofor-main', '-cxxlib', '-static-intel']) #Add -ldmalloc for ddt
 elif env['compiler'] == 'gcc':
+    env.Append(LINKFLAGS=['--static'])
     env.Append(LIBS=['stdc++'])
 
 #
@@ -736,17 +737,17 @@ if env['unitTests'] != 'none':
 
   if env.generatedTestSourceFiles:
     if env['parallelization'] in ['mpi', 'hybrid']:
-      env['CXXTEST_COMMAND'] = 'mpirun -np 1 %t'
+      env['CXXTEST_COMMAND'] = 'mpirun --allow-run-as-root -np 1 %t'
     mpiObject = list(filter(lambda sf: os.path.basename(str(sf)) == 'MPI.o', sourceFiles))
     env.CxxTest(target='#/'+env['buildDir']+'/tests/generated_kernels_test_suite', source=env.generatedSourceFiles+env.generatedTestSourceFiles+mpiObject)
 
   if env.testSourceFiles:
     if env['parallelization'] in ['mpi', 'hybrid']:
-      env['CXXTEST_COMMAND'] = 'mpirun -np 1 %t'
+      env['CXXTEST_COMMAND'] = 'mpirun --allow-run-as-root -np 1 %t'
     env.CxxTest(target='#/'+env['buildDir']+'/tests/serial_test_suite', source=sourceFiles+env.testSourceFiles)
 
   if env['parallelization'] in ['mpi', 'hybrid']:
     for ranks, mpiTestSourceFiles in env.mpiTestSourceFiles.items():
       if mpiTestSourceFiles:
-        env['CXXTEST_COMMAND'] = 'mpirun -np {0} %t'.format(ranks)
+        env['CXXTEST_COMMAND'] = 'mpirun --allow-run-as-root -np {0} %t'.format(ranks)
         env.CxxTest(target='#/'+env['buildDir']+'/tests/parallel_test_suite_{0}'.format(ranks), source=sourceFiles+mpiTestSourceFiles)
