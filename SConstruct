@@ -736,7 +736,7 @@ if env['unitTests'] != 'none':
 
   if env.generatedTestSourceFiles:
     if env['parallelization'] in ['mpi', 'hybrid']:
-      env['CXXTEST_COMMAND'] = 'mpirun -np 1 %t'
+      env['CXXTEST_COMMAND'] = 'mpirun --allow-run-as-root -np 1 %t'
     mpiObject = list(filter(lambda sf: os.path.basename(str(sf)) == 'MPI.o', sourceFiles))
     env.CxxTest(target='#/'+env['buildDir']+'/tests/generated_kernels_test_suite', source=env.generatedSourceFiles+env.generatedTestSourceFiles+mpiObject)
 
@@ -748,5 +748,5 @@ if env['unitTests'] != 'none':
   if env['parallelization'] in ['mpi', 'hybrid']:
     for ranks, mpiTestSourceFiles in env.mpiTestSourceFiles.items():
       if mpiTestSourceFiles:
-        env['CXXTEST_COMMAND'] = 'mpirun --allow-run-as-root -np {0} %t'.format(ranks)
+        env['CXXTEST_COMMAND'] = 'mpirun --allow-run-as-root --oversubscribe -np {0} %t'.format(ranks)
         env.CxxTest(target='#/'+env['buildDir']+'/tests/parallel_test_suite_{0}'.format(ranks), source=sourceFiles+mpiTestSourceFiles)
