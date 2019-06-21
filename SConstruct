@@ -313,9 +313,8 @@ env['LINK'] = env['F90']
 
 # Linker-flags for Fortran linking
 if env['compiler'] == 'intel':
-    env.Append(LINKFLAGS=['-nofor-main', '-cxxlib', '-static-intel']) #Add -ldmalloc for ddt
+    env.Append(LINKFLAGS=['-nofor-main', '-cxxlib']) #Add -ldmalloc for ddt
 elif env['compiler'] == 'gcc':
-    env.Append(LINKFLAGS=['--static'])
     env.Append(LIBS=['stdc++'])
 
 #
@@ -546,18 +545,18 @@ env.Append(CPPDEFINES=['GLM_FORCE_CXX98'])
 # Eigen3
 libs.find(env, 'eigen3', required=False)
 
+# HDF5
+if env['hdf5']:
+    libs.find(env, 'hdf5', required=(not helpMode), parallel=(env['parallelization'] in ['hybrid', 'mpi']))
+
+    env.Append(CPPDEFINES=['USE_HDF'])
+
 # netCDF
 if env['netcdf'] == 'yes':
     libs.find(env, 'netcdf', required=(not helpMode), parallel=(env['parallelization'] in ['hybrid', 'mpi']))
     env.Append(CPPDEFINES=['USE_NETCDF'])
 elif env['netcdf'] == 'passive':
     env.Append(CPPDEFINES=['USE_NETCDF', 'NETCDF_PASSIVE'])
-
-# HDF5
-if env['hdf5']:
-    libs.find(env, 'hdf5', required=(not helpMode), parallel=(env['parallelization'] in ['hybrid', 'mpi']))
-
-    env.Append(CPPDEFINES=['USE_HDF'])
 
 # memkind
 if env['memkind']:
@@ -737,7 +736,7 @@ if env['unitTests'] != 'none':
 
   if env.generatedTestSourceFiles:
     if env['parallelization'] in ['mpi', 'hybrid']:
-      env['CXXTEST_COMMAND'] = 'mpirun --allow-run-as-root -np 1 %t'
+      env['CXXTEST_COMMAND'] = 'mpirun -np 1 %t'
     mpiObject = list(filter(lambda sf: os.path.basename(str(sf)) == 'MPI.o', sourceFiles))
     env.CxxTest(target='#/'+env['buildDir']+'/tests/generated_kernels_test_suite', source=env.generatedSourceFiles+env.generatedTestSourceFiles+mpiObject)
 
