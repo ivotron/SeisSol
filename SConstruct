@@ -95,7 +95,7 @@ vars.AddVariables(
               ),
 
   ( 'numberOfMechanisms', 'Number of anelastic mechanisms (needs to be set if equations=viscoelastic).', '0' ),
-  
+
   ( 'multipleSimulations', 'Fuse multiple simulations in one run.', '1' ),
 
   PathVariable( 'memLayout', 'Path to memory layout file.', None, PathVariable.PathIsFile),
@@ -375,8 +375,9 @@ if env['compiler'] == 'intel':
     env.Append(CXXFLGAS = ['-wd13379'])
 elif env['compiler'] == 'gcc':
     # TODO Fix kernel generation
-    env.Append(CXXFLAGS = ['-Wno-error=unknown-pragmas'])
-
+    env.Append(CFLAGS = ['-Wno-error=class-memaccess'],
+               CXXFLAGS = ['-Wno-error=unknown-pragmas',
+                           '-Wno-error=class-memaccess'])
 # generate vector report (only if requested)
 if env['vecReport']:
   env.Append(CXXFLAGS = ['-vec-report3'])
